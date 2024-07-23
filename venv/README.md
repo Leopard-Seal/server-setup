@@ -1,13 +1,14 @@
 # Python仮想環境セットアップスクリプト
 
-このスクリプト(`setup_venv.sh`)は、Pythonの仮想環境を簡単に設定し、PyTorchをインストールするためのものです。
+このスクリプト(`venv_setup.sh`)は、Pythonの仮想環境を簡単に設定し、PyTorchとxformersをインストールするためのものです。
 
 ## 機能
 
 - 指定された作業ディレクトリ内にPython仮想環境を作成
 - pipの最新版へのアップグレード
-- 既存のPyTorchパッケージの削除とキャッシュのクリア
-- PyTorch 2.3.0 (CUDA 11.8)のインストール
+- PyTorchのインストール（CUDAバージョンの自動検出と選択）
+- xformersのインストール
+- オプションでPyTorchとxformersのインストールをスキップ可能
 - オプションで仮想環境をアクティブなままにすることが可能
 
 ## 使用方法
@@ -15,30 +16,43 @@
 ### スクリプトの実行
 
 ```bash
-./setup_venv.sh [-d <work_directory>] [-r] [-h]
+./venv_setup.sh [-d <work_directory>] [-r] [-s] [-x] [-o <output_file>] [-h]
 ```
 
 ### オプション
 
 - `-d <work_directory>`: 作業ディレクトリ名を指定
 - `-r`: スクリプト終了後も仮想環境をアクティブなままにする
+- `-s`: PyTorchのインストールをスキップ
+- `-x`: xformersのインストールをスキップ
+- `-o <output_file>`: ヘルプメッセージを指定されたファイルに出力
 - `-h`: ヘルプメッセージを表示
 
 ### 例
 
 1. デフォルトの動作（対話的に作業ディレクトリ名を入力）:
    ```bash
-   ./setup_venv.sh
+   ./venv_setup.sh
    ```
 
 2. 作業ディレクトリ名を指定して実行:
    ```bash
-   ./setup_venv.sh -d myproject
+   ./venv_setup.sh -d myproject
    ```
 
 3. 作業ディレクトリ名を指定し、仮想環境をアクティブなままにする:
    ```bash
-   ./setup_venv.sh -d myproject -r
+   ./venv_setup.sh -d myproject -r
+   ```
+
+4. PyTorchのインストールをスキップ:
+   ```bash
+   ./venv_setup.sh -s
+   ```
+
+5. xformersのインストールをスキップ:
+   ```bash
+   ./venv_setup.sh -x
    ```
 
 ### 仮想環境の使用
@@ -49,47 +63,24 @@
 source <work_directory>/venv/bin/activate
 ```
 
-例えば、`myproject`という名前の作業ディレクトリを指定した場合：
-
-```bash
-source myproject/venv/bin/activate
-```
-
 仮想環境を終了するには：
 
 ```bash
 deactivate
 ```
 
-## 仮想環境のテスト
+## PyTorchバージョンの選択
 
-仮想環境が正しく設定され、PyTorchが適切にインストールされたことを確認するために、`venv_test.py`スクリプトを用意しています。
+スクリプトは自動的にシステムのCUDAバージョンを検出し、適切なPyTorchバージョンを推奨します。ユーザーは推奨バージョンを使用するか、別のバージョンを選択することができます。
 
-### テストスクリプトの実行方法
-
-1. 仮想環境をアクティベートします：
-   ```bash
-   source <work_directory>/venv/bin/activate
-   ```
-
-2. テストスクリプトを実行します：
-   ```bash
-   python venv_test.py
-   ```
-
-このスクリプトは以下の情報を表示します：
-- Pythonのバージョン
-- PyTorchのバージョン
-- CUDAが利用可能かどうか
-- CUDAのバージョン（利用可能な場合）
-- 簡単なPyTorch操作の結果
-
-正常に実行されれば、仮想環境とPyTorchが正しく設定されたことが確認できます。
+- CUDA 12.1以上: PyTorch (CUDA 12.1)
+- CUDA 11.8以上12.0未満: PyTorch (CUDA 11.8)
+- CUDA未検出またはその他: CPU版PyTorch
 
 ## 注意事項
 
 - このスクリプトを実行するには、Python 3とpipがシステムにインストールされている必要があります。
-- PyTorchのバージョンは2.3.0（CUDA 11.8用）に固定されています。必要に応じてスクリプトを編集してバージョンを変更できます。
+- CUDAバージョンの検出にはnvidia-smiコマンドを使用します。
 - スクリプトはBashシェル用に書かれています。他のシェルでの動作は保証されません。
 - 仮想環境は指定された作業ディレクトリ内の`venv`サブディレクトリに作成されます。
 
@@ -97,8 +88,8 @@ deactivate
 
 - スクリプトが実行できない場合は、実行権限があることを確認してください：
   ```bash
-  chmod +x setup_venv.sh
+  chmod +x venv_setup.sh
   ```
 - 仮想環境の作成に失敗する場合は、Python 3が正しくインストールされていることを確認してください。
 - PyTorchのインストールに問題がある場合は、インターネット接続を確認し、必要に応じてプロキシ設定を行ってください。
-- テストスクリプトでエラーが発生する場合は、仮想環境が正しくアクティベートされていることを確認してください。
+- CUDAバージョンが正しく検出されない場合は、NVIDIAドライバーが正しくインストールされていることを確認してください。
